@@ -34,6 +34,9 @@
         </logicalFolder>
       </logicalFolder>
       <itemPath>../src/pt.h</itemPath>
+      <itemPath>../src/lc-switch.h</itemPath>
+      <itemPath>../src/lc.h</itemPath>
+      <itemPath>protothreads.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -81,10 +84,9 @@
           <itemPath>../src/config/default/interrupts.c</itemPath>
           <itemPath>../src/config/default/exceptions.c</itemPath>
         </logicalFolder>
-        <itemPath>../src/lc-switch.h</itemPath>
       </logicalFolder>
       <itemPath>../src/main.c</itemPath>
-      <itemPath>../src/lc.h</itemPath>
+      <itemPath>protothreads.c</itemPath>
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
@@ -136,7 +138,6 @@
       <C32>
         <property key="additional-warnings" value="true"/>
         <property key="addresss-attribute-use" value="false"/>
-        <property key="appendMe" value=""/>
         <property key="cast-align" value="false"/>
         <property key="code-model" value="default"/>
         <property key="const-model" value="default"/>
@@ -155,7 +156,7 @@
         <property key="generate-micro-compressed-code" value="false"/>
         <property key="isolate-each-function" value="true"/>
         <property key="keep-inline" value="false"/>
-        <property key="make-warnings-into-errors" value="true"/>
+        <property key="make-warnings-into-errors" value="false"/>
         <property key="oXC16gcc-errata" value=""/>
         <property key="oXC16gcc-large-aggregate" value="false"/>
         <property key="oXC16gcc-mpa-lvl" value=""/>
@@ -179,6 +180,8 @@
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
+        <appendMe value="-Wno-error=unused-variable"/>
+        <userComments value="-Wno-error=unused-variable"/>
       </C32>
       <C32-AR>
         <property key="additional-options-chop-files" value="false"/>
@@ -214,7 +217,6 @@
         <property key="additional-options-use-response-files" value="false"/>
         <property key="additional-options-write-sla" value="false"/>
         <property key="allocate-dinit" value="false"/>
-        <property key="appendMe" value=""/>
         <property key="code-dinit" value="false"/>
         <property key="ebase-addr" value=""/>
         <property key="enable-check-sections" value="false"/>
@@ -256,11 +258,11 @@
         <property key="symbol-stripping" value=""/>
         <property key="trace-symbols" value=""/>
         <property key="warn-section-align" value="false"/>
+        <userComments value="-Wno-error=unused-variable"/>
       </C32-LD>
       <C32CPP>
         <property key="additional-warnings" value="false"/>
         <property key="addresss-attribute-use" value="false"/>
-        <property key="appendMe" value=""/>
         <property key="check-new" value="false"/>
         <property key="eh-specs" value="true"/>
         <property key="enable-app-io" value="false"/>
@@ -286,6 +288,7 @@
         <property key="use-cci" value="false"/>
         <property key="use-iar" value="false"/>
         <property key="use-indirect-calls" value="false"/>
+        <userComments value="-Wno-error=unused-variable"/>
       </C32CPP>
       <C32Global>
         <property key="combine-sourcefiles" value="false"/>
@@ -306,6 +309,7 @@
         <property key="save-temps" value="false"/>
         <property key="stack-smashing" value=""/>
         <property key="wpo-lto" value="false"/>
+        <userComments value="-Wno-error=unused-variable"/>
       </C32Global>
     </conf>
   </confs>

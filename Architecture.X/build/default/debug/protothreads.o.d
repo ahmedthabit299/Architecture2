@@ -1,5 +1,6 @@
-build/default/debug/_ext/1360937237/main.o: ../src/main.c \
- ../src/config/default/definitions.h \
+build/default/debug/protothreads.o: protothreads.c ../../pt.h ../../lc.h \
+ ../../lc-switch.h ../Architecture.X/protothreads.h \
+ ../Architecture.X/../../pt.h ../src/config/default/definitions.h \
  ../src/config/default/peripheral/uart/plib_uart3.h \
  ../src/config/default/device.h \
  ../src/config/default/toolchain_specifics.h \
@@ -10,11 +11,17 @@ build/default/debug/_ext/1360937237/main.o: ../src/main.c \
  ../src/config/default/peripheral/gpio/plib_gpio.h \
  ../src/config/default/peripheral/evic/plib_evic.h \
  ../src/config/default/peripheral/tmr1/plib_tmr1.h \
- ../src/config/default/peripheral/tmr1/plib_tmr1_common.h \
- ../src/config/default/peripheral/tmr1/plib_tmr1.h ../src/../../pt.h \
- ../src/../../lc.h ../src/../../lc-switch.h ../src/lc.h \
- ../src/lc-switch.h ../src/../Architecture.X/protothreads.h \
- ../src/../Architecture.X/../../pt.h
+ ../src/config/default/peripheral/tmr1/plib_tmr1_common.h
+
+../../pt.h:
+
+../../lc.h:
+
+../../lc-switch.h:
+
+../Architecture.X/protothreads.h:
+
+../Architecture.X/../../pt.h:
 
 ../src/config/default/definitions.h:
 
@@ -39,19 +46,3 @@ build/default/debug/_ext/1360937237/main.o: ../src/main.c \
 ../src/config/default/peripheral/tmr1/plib_tmr1.h:
 
 ../src/config/default/peripheral/tmr1/plib_tmr1_common.h:
-
-../src/config/default/peripheral/tmr1/plib_tmr1.h:
-
-../src/../../pt.h:
-
-../src/../../lc.h:
-
-../src/../../lc-switch.h:
-
-../src/lc.h:
-
-../src/lc-switch.h:
-
-../src/../Architecture.X/protothreads.h:
-
-../src/../Architecture.X/../../pt.h:

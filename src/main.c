@@ -30,6 +30,7 @@
 #include "../../pt.h"
 #include "lc.h"
 #include "lc-switch.h"
+#include "../Architecture.X/protothreads.h"
 
 
 // 1) Global tick counter for Protothreads

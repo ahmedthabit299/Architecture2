@@ -37,6 +37,7 @@
       <itemPath>../src/lc-switch.h</itemPath>
       <itemPath>../src/lc.h</itemPath>
       <itemPath>protothreads.h</itemPath>
+      <itemPath>../src/layers_docments.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

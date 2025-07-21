@@ -51,7 +51,7 @@ PT_THREAD( TelitThread(struct pt *pt) )
     while (1) {
 //        PT_WAIT_UNTIL(pt, telitDataReady());
         uint8_t buf[128];
-        int len = UART3_Read(buf, sizeof(buf));
+//        int len = UART3_Read(buf, sizeof(buf));
 //        handleTelitResponse(buf, len);
     }
 

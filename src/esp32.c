@@ -1,149 +1,60 @@
-/* ************************************************************************** */
-/** Descriptive File Name
+#include "esp32.h"
 
-  @Company
-    Company Name
+#include "peripheral/uart/plib_uart1.h"
+#include "peripheral/uart/plib_uart2.h"
+#include "peripheral/uart/plib_uart3.h"
+#include <string.h>
 
-  @File Name
-    filename.c
+#define ESP32_MAX_LINES    8
+#define ESP32_MAX_LINE_LEN 128
 
-  @Summary
-    Brief description of the file.
+static char lineBuf[ESP32_MAX_LINE_LEN];
+static int  linePos;
 
-  @Description
-    Describe the purpose of this file.
- */
-/* ************************************************************************** */
+static char lines[ESP32_MAX_LINES][ESP32_MAX_LINE_LEN];
+static int  head, tail;
 
-/* ************************************************************************** */
-/* ************************************************************************** */
-/* Section: Included Files                                                    */
-/* ************************************************************************** */
-/* ************************************************************************** */
+void Esp32_Init(void) {
+    linePos = 0;
+    head = tail = 0;
+}
 
-/* This section lists the other files that are included in this file.
- */
-
-/* TODO:  Include other files here if needed. */
-
-
-/* ************************************************************************** */
-/* ************************************************************************** */
-/* Section: File Scope or Global Data                                         */
-/* ************************************************************************** */
-/* ************************************************************************** */
-
-/*  A brief description of a section can be given directly below the section
-    banner.
- */
-
-/* ************************************************************************** */
-/** Descriptive Data Item Name
-
-  @Summary
-    Brief one-line summary of the data item.
-    
-  @Description
-    Full description, explaining the purpose and usage of data item.
-    <p>
-    Additional description in consecutive paragraphs separated by HTML 
-    paragraph breaks, as necessary.
-    <p>
-    Type "JavaDoc" in the "How Do I?" IDE toolbar for more information on tags.
-    
-  @Remarks
-    Any additional remarks
- */
-int global_data;
-
-
-/* ************************************************************************** */
-/* ************************************************************************** */
-// Section: Local Functions                                                   */
-/* ************************************************************************** */
-/* ************************************************************************** */
-
-/*  A brief description of a section can be given directly below the section
-    banner.
- */
-
-/* ************************************************************************** */
-
-/** 
-  @Function
-    int ExampleLocalFunctionName ( int param1, int param2 ) 
-
-  @Summary
-    Brief one-line description of the function.
-
-  @Description
-    Full description, explaining the purpose and usage of the function.
-    <p>
-    Additional description in consecutive paragraphs separated by HTML 
-    paragraph breaks, as necessary.
-    <p>
-    Type "JavaDoc" in the "How Do I?" IDE toolbar for more information on tags.
-
-  @Precondition
-    List and describe any required preconditions. If there are no preconditions,
-    enter "None."
-
-  @Parameters
-    @param param1 Describe the first parameter to the function.
-    
-    @param param2 Describe the second parameter to the function.
-
-  @Returns
-    List (if feasible) and describe the return values of the function.
-    <ul>
-      <li>1   Indicates an error occurred
-      <li>0   Indicates an error did not occur
-    </ul>
-
-  @Remarks
-    Describe any special behavior not described above.
-    <p>
-    Any additional remarks.
-
-  @Example
-    @code
-    if(ExampleFunctionName(1, 2) == 0)
-    {
-        return 3;
+void handleEsp32Response(const uint8_t *buf, int len) {
+    for (int i = 0; i < len; i++) {
+        char c = buf[i];
+        if (c == '\r') {
+            // skip
+        }
+        else if (c == '\n') {
+            if (linePos > 0) {
+                lineBuf[linePos] = '\0';
+                int next = (head + 1) % ESP32_MAX_LINES;
+                if (next != tail) {
+                    strncpy(lines[head], lineBuf, ESP32_MAX_LINE_LEN);
+                    head = next;
+                }
+                linePos = 0;
+            }
+        }
+        else if (linePos < ESP32_MAX_LINE_LEN - 1) {
+            lineBuf[linePos++] = c;
+        }
     }
- */
-static int ExampleLocalFunction(int param1, int param2) {
-    return 0;
 }
 
-
-/* ************************************************************************** */
-/* ************************************************************************** */
-// Section: Interface Functions                                               */
-/* ************************************************************************** */
-/* ************************************************************************** */
-
-/*  A brief description of a section can be given directly below the section
-    banner.
- */
-
-// *****************************************************************************
-
-/** 
-  @Function
-    int ExampleInterfaceFunctionName ( int param1, int param2 ) 
-
-  @Summary
-    Brief one-line description of the function.
-
-  @Remarks
-    Refer to the example_file.h interface header for function usage details.
- */
-int ExampleInterfaceFunction(int param1, int param2) {
-    return 0;
+bool esp32LineReady(void) {
+    return (head != tail);
 }
 
+const char* esp32GetLine(void) {
+    if (head == tail) return NULL;
+    const char *ln = lines[tail];
+    tail = (tail + 1) % ESP32_MAX_LINES;
+    return ln;
+}
 
-/* *****************************************************************************
- End of File
- */
+void esp32SendCommand(const char *cmd) {
+    int len = strlen(cmd);
+    UART1_Write((const uint8_t*)cmd, len);
+    UART1_Write((const uint8_t*)"\r\n", 2);
+}

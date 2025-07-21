@@ -62,6 +62,36 @@
 // *****************************************************************************
 
 
+/*** Macros for GPIO_RB2_Int_EtherNet pin ***/
+#define GPIO_RB2_Int_EtherNet_Set()               (LATBSET = (1<<2))
+#define GPIO_RB2_Int_EtherNet_Clear()             (LATBCLR = (1<<2))
+#define GPIO_RB2_Int_EtherNet_Toggle()            (LATBINV= (1<<2))
+#define GPIO_RB2_Int_EtherNet_OutputEnable()      (TRISBCLR = (1<<2))
+#define GPIO_RB2_Int_EtherNet_InputEnable()       (TRISBSET = (1<<2))
+#define GPIO_RB2_Int_EtherNet_Get()               ((PORTB >> 2) & 0x1)
+#define GPIO_RB2_Int_EtherNet_GetLatch()          ((LATB >> 2) & 0x1)
+#define GPIO_RB2_Int_EtherNet_PIN                  GPIO_PIN_RB2
+
+/*** Macros for GPIO_RB3_RST_EtherNet pin ***/
+#define GPIO_RB3_RST_EtherNet_Set()               (LATBSET = (1<<3))
+#define GPIO_RB3_RST_EtherNet_Clear()             (LATBCLR = (1<<3))
+#define GPIO_RB3_RST_EtherNet_Toggle()            (LATBINV= (1<<3))
+#define GPIO_RB3_RST_EtherNet_OutputEnable()      (TRISBCLR = (1<<3))
+#define GPIO_RB3_RST_EtherNet_InputEnable()       (TRISBSET = (1<<3))
+#define GPIO_RB3_RST_EtherNet_Get()               ((PORTB >> 3) & 0x1)
+#define GPIO_RB3_RST_EtherNet_GetLatch()          ((LATB >> 3) & 0x1)
+#define GPIO_RB3_RST_EtherNet_PIN                  GPIO_PIN_RB3
+
+/*** Macros for GPIO_RD2_SS_Ethernet pin ***/
+#define GPIO_RD2_SS_Ethernet_Set()               (LATDSET = (1<<2))
+#define GPIO_RD2_SS_Ethernet_Clear()             (LATDCLR = (1<<2))
+#define GPIO_RD2_SS_Ethernet_Toggle()            (LATDINV= (1<<2))
+#define GPIO_RD2_SS_Ethernet_OutputEnable()      (TRISDCLR = (1<<2))
+#define GPIO_RD2_SS_Ethernet_InputEnable()       (TRISDSET = (1<<2))
+#define GPIO_RD2_SS_Ethernet_Get()               ((PORTD >> 2) & 0x1)
+#define GPIO_RD2_SS_Ethernet_GetLatch()          ((LATD >> 2) & 0x1)
+#define GPIO_RD2_SS_Ethernet_PIN                  GPIO_PIN_RD2
+
 /*** Macros for GPIO_In_CTS_RD3_UART_RTS pin ***/
 #define GPIO_In_CTS_RD3_UART_RTS_Set()               (LATDSET = (1<<3))
 #define GPIO_In_CTS_RD3_UART_RTS_Clear()             (LATDCLR = (1<<3))

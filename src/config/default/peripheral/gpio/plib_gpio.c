@@ -64,12 +64,14 @@ void GPIO_Initialize ( void )
     TRISACLR = 0x8000; /* Direction Control */
     ANSELACLR = 0x42; /* Digital Mode Enable */
     /* PORTB Initialization */
-    ANSELBCLR = 0xc001; /* Digital Mode Enable */
+    LATB = 0x0; /* Initial Latch Value */
+    TRISBCLR = 0x8; /* Direction Control */
+    ANSELBCLR = 0xc00d; /* Digital Mode Enable */
     /* PORTC Initialization */
     ANSELCCLR = 0x20; /* Digital Mode Enable */
     /* PORTD Initialization */
     LATD = 0x0; /* Initial Latch Value */
-    TRISDCLR = 0x2; /* Direction Control */
+    TRISDCLR = 0x6; /* Direction Control */
 
 
     /* PPS Input Remapping */

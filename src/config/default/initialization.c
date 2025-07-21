@@ -45,7 +45,6 @@
 // *****************************************************************************
 #include "definitions.h"
 #include "device.h"
-#include "peripheral/uart/plib_uart3.h"
 
 
 // ****************************************************************************
@@ -170,6 +169,8 @@ void SYS_Initialize ( void* data )
 	UART2_Initialize();
 
     TMR1_Initialize();
+
+	SPI1_Initialize();
 
 
     EVIC_Initialize();

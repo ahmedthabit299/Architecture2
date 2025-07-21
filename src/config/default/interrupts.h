@@ -58,6 +58,8 @@
 // *****************************************************************************
 
 void TIMER_1_InterruptHandler( void );
+void SPI1_TX_InterruptHandler( void );
+void SPI1_RX_InterruptHandler( void );
 void UART1_RX_InterruptHandler( void );
 void UART1_TX_InterruptHandler( void );
 void UART1_ERR_InterruptHandler( void );

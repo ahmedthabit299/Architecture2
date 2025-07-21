@@ -67,6 +67,8 @@
 // *****************************************************************************
 // *****************************************************************************
 void TIMER_1_Handler (void);
+void SPI1_TX_Handler (void);
+void SPI1_RX_Handler (void);
 void UART1_RX_Handler (void);
 void UART1_TX_Handler (void);
 void UART1_ERR_Handler (void);
@@ -86,6 +88,16 @@ void UART3_ERR_Handler (void);
 void __attribute__((used)) __ISR(_TIMER_1_VECTOR, ipl1SOFT) TIMER_1_Handler (void)
 {
     TIMER_1_InterruptHandler();
+}
+
+void __attribute__((used)) __ISR(_SPI1_TX_VECTOR, ipl1SOFT) SPI1_TX_Handler (void)
+{
+    SPI1_TX_InterruptHandler();
+}
+
+void __attribute__((used)) __ISR(_SPI1_RX_VECTOR, ipl1SOFT) SPI1_RX_Handler (void)
+{
+    SPI1_RX_InterruptHandler();
 }
 
 void __attribute__((used)) __ISR(_UART1_RX_VECTOR, ipl1SOFT) UART1_RX_Handler (void)

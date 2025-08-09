@@ -143,3 +143,100 @@ PT_THREAD(CliThread(struct pt *pt)) {
 
     PT_END(pt);
 }
+
+
+
+
+/***
+ future needs
+ * 
+ * 
+ * Totally doable. You?ve got a few clean ways to ?skip? a protothread based on a condition?pick what fits your flow.
+
+1) Skip at the scheduler (simplest)
+Don?t call the thread when it?s disabled.
+
+c
+Copy
+Edit
+extern volatile bool telit_enabled;
+
+while (1) {
+    SYS_Tasks();
+
+    PT_SCHEDULE(SensorThread(&ptSensor));
+    if (telit_enabled) PT_SCHEDULE(TelitThread(&ptTelit));   // <- gate here
+    PT_SCHEDULE(Esp32Thread(&ptEsp32));
+    PT_SCHEDULE(EthThread(&ptEth));
+    PT_SCHEDULE(CliThread(&ptCLI));
+}
+Pros: zero CPU inside that PT when disabled.
+
+If telit_enabled can change in an ISR, declare it volatile.
+
+2) Block at the top of the thread
+Make the thread sleep until enabled.
+
+PT_THREAD(TelitThread(struct pt *pt))
+{
+    PT_BEGIN(pt);
+    while (1) {
+        PT_WAIT_UNTIL(pt, telit_enabled);   // parked until true
+
+        // ... do work while enabled ...
+
+        // Optional: go idle again when disabled
+        PT_WAIT_UNTIL(pt, !telit_enabled);
+    }
+    PT_END(pt);
+}
+Pros: very clear. The PT yields while disabled.
+
+3) Skip just this iteration
+If you only want to bypass the work for one loop pass:
+
+while (1) {
+    if (!telit_enabled) { PT_YIELD(pt); continue; }  // quick skip
+
+    // normal body
+    // ...
+}
+PT_YIELD cooperatively gives time to others, then you re-check next call.
+
+4) Hard stop / cancel the thread
+Terminate the PT until you explicitly reinit it.
+
+if (!telit_enabled) {
+    // optional: cleanup here
+    PT_EXIT(pt);            // thread is now ?dead?
+}
+/* later, to re-enable: *
+PT_INIT(&ptTelit);
+Use this if you want a fresh start (state reset) when re-enabling.
+
+5) Semaphore-style pause/resume (built-in to Protothreads)
+If you prefer signaling:
+
+#include "pt-sem.h"
+static struct pt_sem telit_sem;
+
+// init once
+PT_SEM_INIT(&telit_sem, 0);
+
+// thread
+PT_SEM_WAIT(pt, &telit_sem);   // blocks here until signaled
+// ...work...
+
+// somewhere else to resume it:
+PT_SEM_SIGNAL(pt_any, &telit_sem);
+Tips
+If the condition is set from an ISR, make it volatile bool and keep ISR work minimal.
+
+If you disable a thread that might be mid-operation (e.g., waiting on UART), add the condition to your waits:
+
+PT_WAIT_UNTIL(pt, UART1_TransmitComplete() || !telit_enabled);
+if (!telit_enabled) { // optional abort/cleanup 
+                        continue; }
+If you tell me which thread(s) you want to gate and what the flag is (e.g., a CLI command), I can wire the exact pattern into your current code.
+ 
+ */

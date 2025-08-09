@@ -5,7 +5,12 @@
 #include "../../pt.h"
 #include "../Architecture.X/protothreads.h"
 #include "definitions.h"                // SYS function prototypes
+#include "bsp.h"
 
+#include <stddef.h>                     // Defines NULL
+#include <stdbool.h>                    // Defines true
+#include <stdlib.h>                     // Defines EXIT_FAILURE
+#include "definitions.h"                // SYS function prototypes
 
 
 
@@ -16,8 +21,20 @@ extern volatile uint32_t msTicks;
 // One pt struct per thread
 struct pt ptSensor, ptTelit, ptEsp32, ptEth, ptCLI;
 
-void Protothreads_Init(void)
-{
+
+void UART1_SendChar11(char c) {
+    while (U1STAbits.UTXBF);
+    U1TXREG = c;
+}
+
+void UART1_WriteString11(const char *str) {
+    while (*str) UART1_SendChar11(*str++);
+}
+
+
+
+
+void Protothreads_Init(void) {
     PT_INIT(&ptSensor);
     PT_INIT(&ptTelit);
     PT_INIT(&ptEsp32);
@@ -26,17 +43,16 @@ void Protothreads_Init(void)
 }
 
 /* ????????? SensorThread ????????? */
-PT_THREAD( SensorThread(struct pt *pt) )
-{
+PT_THREAD(SensorThread(struct pt *pt)) {
     static uint32_t t0;
     PT_BEGIN(pt);
 
     while (1) {
         t0 = msTicks;
-//        HAL_ADC_StartConversion();
-//        PT_WAIT_UNTIL(pt, HAL_ADC_ConversionComplete());
-//        uint16_t val = HAL_ADC_GetResult();
-//        processSensor(val);                // your handler
+        //        HAL_ADC_StartConversion();
+        //        PT_WAIT_UNTIL(pt, HAL_ADC_ConversionComplete());
+        //        uint16_t val = HAL_ADC_GetResult();
+        //        processSensor(val);                // your handler
         PT_WAIT_UNTIL(pt, (msTicks - t0) >= 1000);
     }
 
@@ -44,62 +60,60 @@ PT_THREAD( SensorThread(struct pt *pt) )
 }
 
 /* ????????? TelitThread ?????????? */
-PT_THREAD( TelitThread(struct pt *pt) )
-{
+PT_THREAD(TelitThread(struct pt *pt)) {
     PT_BEGIN(pt);
 
     while (1) {
-//        PT_WAIT_UNTIL(pt, telitDataReady());
-        uint8_t buf[128];
-//        int len = UART3_Read(buf, sizeof(buf));
-//        handleTelitResponse(buf, len);
+        //        PT_WAIT_UNTIL(pt, telitDataReady());
+//        uint8_t buf[128];
+        //        int len = UART3_Read(buf, sizeof(buf));
+        //        handleTelitResponse(buf, len);
     }
 
     PT_END(pt);
 }
 
 /* ????????? Esp32Thread ????????? */
-PT_THREAD( Esp32Thread(struct pt *pt) )
-{
+PT_THREAD(Esp32Thread(struct pt *pt)) {
     PT_BEGIN(pt);
 
     while (1) {
-//        PT_WAIT_UNTIL(pt, esp32DataReady());
-        uint8_t buf[128];
-        int len = UART1_Read(buf, sizeof(buf));
-         // === UART test = One-time UART startup messages  ===
-    UART1_Write((uint8_t *) "PT Hello ESP32!\r\n", 14);
-    UART3_Write((uint8_t *) "PT AT\r\n", 4);
+        //        PT_WAIT_UNTIL(pt, esp32DataReady());
+//        uint8_t buf[128];
+//        int len = UART1_Read(buf, sizeof (buf));
+        // === UART test = One-time UART startup messages  ===
+        //UART1_Write((uint8_t *) "ESP32!\n", sizeof ("ESP32!\n") + 16);
 
-//        handleEsp32(buf, len);
+         UART1_WriteString11("ESP32!\n\r");
+        PT_WAIT_UNTIL(pt, UART1_TransmitComplete());
+        UART3_Write((uint8_t *) "PT AT\r\n", 4);
+        //        handleEsp32(buf, len);
     }
 
     PT_END(pt);
 }
 
 /* ????????? EthThread ???????????? */
-PT_THREAD( EthThread(struct pt *pt) )
-{
+PT_THREAD(EthThread(struct pt *pt)) {
     PT_BEGIN(pt);
 
     while (1) {
-//        ETH_PeriodicTasks();    // e.g. lwIP timers or packet handling
-        PT_YIELD(pt);           // give other threads a chance
+        //        ETH_PeriodicTasks();    // e.g. lwIP timers or packet handling
+        PT_YIELD(pt); // give other threads a chance
     }
 
     PT_END(pt);
 }
 
 /* ????????? CliThread ??????????? */
-PT_THREAD( CliThread(struct pt *pt) )
-{
+PT_THREAD(CliThread(struct pt *pt)) {
     PT_BEGIN(pt);
 
     while (1) {
-//        PT_WAIT_UNTIL(pt, cliInputReady());
-//        char cmd[64];
-//        cliReadLine(cmd, sizeof(cmd));
-//        cliExecute(cmd);
+        //        PT_WAIT_UNTIL(pt, cliInputReady());
+        //        char cmd[64];
+        //        cliReadLine(cmd, sizeof(cmd));
+        //        cliExecute(cmd);
     }
 
     PT_END(pt);

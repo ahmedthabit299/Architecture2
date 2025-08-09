@@ -129,31 +129,31 @@ int main(void) {
     
     
     // === UART test = One-time UART startup messages  ===
-    UART1_Write((uint8_t *) "Hello ESP32!\r\n", 14);
+    UART1_Write((uint8_t *) "1 Hello ESP32!\r\n", 16);
     UART3_Write((uint8_t *) "AT\r\n", 4);
-    UART1_WriteString("Sending NOooSMS...\r\n");
+    UART1_WriteString("2 Sending NOooSMS...\r\n");
 
-    UART1_WriteString("TSSSSending SMS...\r\n");
+    UART1_WriteString("3 TSSSSending SMS...\r\n");
     /* ?????????? Layer?1 Helpers ??????????
        ? 1?ms SysTick for Protothreads   ?
        ???????????????????????????????????? */
     
-//    BSP_Timer1_Init();        // the 1?ms SysTick for Protothreads
+    BSP_Timer1_Init();        // the 1?ms SysTick for Protothreads
     
      /* ?????????? Layer?4 Middleware ???????
        ? Telit UART3 setup & parser hook ?
        ???????????????????????????????????? */
 //    
 //    
-//    BSP_UART3_Init();
+    BSP_UART3_Init();
 //    Telit_Init();
-//    Protothreads_Init();       // Layer?3 scheduler
+    Protothreads_Init();       // Layer?3 scheduler
     
 //    INTERRUPT_GlobalInterruptEnable();
 
 
     // === UART test = One-time UART startup messages  ===
-    UART1_Write((uint8_t *) "Hello ESP32!\r\n", 14);
+    UART1_Write((uint8_t *) "4 Hello ESP32!\r\n", 14);
     UART3_Write((uint8_t *) "AT\r\n", 4);
 
 //    //===  Register UART3 receive callback for Telit responses === interrupt-based notification =====
@@ -166,16 +166,16 @@ int main(void) {
 
     while (true) {
         /* Maintain state machines of all polled MPLAB Harmony modules. */
-         UART1_WriteString("Sending NOooSMS...\r\n");
+//         UART1_WriteString("bSending NOooSMS...\r\n");
         
         SYS_Tasks();
         
-        UART1_WriteString("Sending NOooSMS...\r\n");
+//        UART1_WriteString("ASending NOooSMS...\r\n");
          
         // Run each Protothread once per loop
 //        SensorThread(&ptSensor);
 //        TelitThread(&ptTelit);
-//        Esp32Thread(&ptEsp32);
+        Esp32Thread(&ptEsp32);
 //        EthThread(&ptEth);
 //        CliThread(&ptCLI);
         

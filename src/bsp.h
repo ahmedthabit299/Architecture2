@@ -4,8 +4,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-
+#ifdef USE_TIMER1_HANDLER
 static void Timer1Handler(uint32_t status, uintptr_t context);
+#endif
 
 void BSP_Timer1_Init(void);
 

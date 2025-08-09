@@ -173,11 +173,11 @@ int main(void) {
 //        UART1_WriteString("ASending NOooSMS...\r\n");
          
         // Run each Protothread once per loop
-//        SensorThread(&ptSensor);
-//        TelitThread(&ptTelit);
+        SensorThread(&ptSensor);
+        TelitThread(&ptTelit);
         Esp32Thread(&ptEsp32);
-//        EthThread(&ptEth);
-//        CliThread(&ptCLI);
+        EthThread(&ptEth);
+        CliThread(&ptCLI);
         
         
 

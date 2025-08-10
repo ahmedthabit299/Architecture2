@@ -13,7 +13,8 @@ build/default/debug/protothreads.o: protothreads.c ../../pt.h ../../lc.h \
  ../src/config/default/peripheral/tmr1/plib_tmr1.h \
  ../src/config/default/peripheral/tmr1/plib_tmr1_common.h \
  ../src/config/default/peripheral/spi/spi_master/plib_spi1_master.h \
- ../src/config/default/peripheral/spi/spi_master/plib_spi_master_common.h
+ ../src/config/default/peripheral/spi/spi_master/plib_spi_master_common.h \
+ ../src/bsp.h ../src/esp32_proto.h
 
 ../../pt.h:
 
@@ -52,3 +53,7 @@ build/default/debug/protothreads.o: protothreads.c ../../pt.h ../../lc.h \
 ../src/config/default/peripheral/spi/spi_master/plib_spi1_master.h:
 
 ../src/config/default/peripheral/spi/spi_master/plib_spi_master_common.h:
+
+../src/bsp.h:
+
+../src/esp32_proto.h:

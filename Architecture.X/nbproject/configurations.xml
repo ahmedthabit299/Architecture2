@@ -38,6 +38,8 @@
           <itemPath>../src/config/default/device.h</itemPath>
           <itemPath>../src/config/default/definitions.h</itemPath>
         </logicalFolder>
+        <itemPath>../src/esp32_comm.h</itemPath>
+        <itemPath>../src/esp32_proto.h</itemPath>
       </logicalFolder>
       <itemPath>../src/pt.h</itemPath>
       <itemPath>../src/lc-switch.h</itemPath>
@@ -96,6 +98,8 @@
           <itemPath>../src/config/default/interrupts.c</itemPath>
           <itemPath>../src/config/default/exceptions.c</itemPath>
         </logicalFolder>
+        <itemPath>../src/esp32_comm.c</itemPath>
+        <itemPath>../src/esp32_proto.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="middlewarelayer" projectFiles="true">
         <itemPath>../src/telit.h</itemPath>
@@ -399,6 +403,8 @@
         <property key="memories.programmemory" value="true"/>
         <property key="memories.programmemory.ranges" value="1d000000-1d03ffff"/>
         <property key="poweroptions.powerenable" value="false"/>
+        <property key="programmerToGoFilePath"
+                  value="C:/Users/ahmed.thabit/Desktop/Minesh/ArchitectureFolder/Architecture.X/debug/default/Architecture_ptg"/>
         <property key="programmerToGoImageName" value="Architecture_ptg"/>
         <property key="programoptions.donoteraseauxmem" value="false"/>
         <property key="programoptions.eraseb4program" value="true"/>

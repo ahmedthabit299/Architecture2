@@ -10,9 +10,10 @@
 #include <stddef.h>                     // Defines NULL
 #include <stdbool.h>                    // Defines true
 #include <stdlib.h>                     // Defines EXIT_FAILURE
+#include <string.h>
+#include "esp32_proto.h"
 
-
-
+extern bool ESP32_TakeRxFlag(void); // if you added it; else just call ESP32_Poll()
 
 // Millisecond tick, incremented in Timer1 ISR
 extern volatile uint32_t msTicks;
@@ -27,6 +28,15 @@ void UART1_SendChar11(char c) {
 
 void UART1_WriteString11(const char *str) {
     while (*str) UART1_SendChar11(*str++);
+}
+
+void UART3_WriteString33(const char* str) {
+    UART3_Write((void*) str, strlen(str));
+}
+
+void UART3_WriteChar(char c) {
+    while (U3STAbits.UTXBF); // Wait if TX buffer is full
+    U3TXREG = c;
 }
 
 void Protothreads_Init(void) {
@@ -48,12 +58,12 @@ PT_THREAD(SensorThread(struct pt *pt)) {
         //        PT_WAIT_UNTIL(pt, HAL_ADC_ConversionComplete());
         //        uint16_t val = HAL_ADC_GetResult();
         //        processSensor(val);                // your handler
-        
-        
-        
-        
+
+
+
+
         UART1_WriteString11("Sensor!\n\r");
-        
+
         PT_WAIT_UNTIL(pt, UART1_TransmitComplete());
 
         PT_WAIT_UNTIL(pt, (msTicks - t0) >= 1000);
@@ -75,6 +85,7 @@ PT_THREAD(TelitThread(struct pt *pt)) {
         //        int len = UART3_Read(buf, sizeof(buf));
         //        handleTelitResponse(buf, len);
         UART1_WriteString11("Telit!\n\r");
+        UART3_WriteString33("AT\r\n");
         PT_WAIT_UNTIL(pt, UART1_TransmitComplete());
         PT_WAIT_UNTIL(pt, (msTicks - t0) >= 1000);
 
@@ -87,6 +98,8 @@ PT_THREAD(TelitThread(struct pt *pt)) {
 PT_THREAD(Esp32Thread(struct pt *pt)) {
     static uint32_t t0;
     PT_BEGIN(pt);
+    // Register app-level handler once
+    ESP32_RegisterFrameHandler(Esp_HandleFrame); // you implement this
 
     while (1) {
         t0 = msTicks;
@@ -96,8 +109,15 @@ PT_THREAD(Esp32Thread(struct pt *pt)) {
         // === UART test = One-time UART startup messages  ===
         //UART1_Write((uint8_t *) "ESP32!\n", sizeof ("ESP32!\n") + 16);
 
+        // wait for RX or add a timed poll
+        PT_WAIT_UNTIL(pt, /* rx flag from Option B */ true);
+        ESP32_Poll();
+
         UART1_WriteString11("ESP32!\n\r");
         PT_WAIT_UNTIL(pt, UART1_TransmitComplete());
+        // protothreads.c (Esp32Thread)
+//        PT_WAIT_UNTIL(pt, ESP32_TakeRxFlag() /* or timeout condition */);
+
         UART3_Write((uint8_t *) "PT AT\r\n", 4);
         //        handleEsp32(buf, len);
         PT_WAIT_UNTIL(pt, (msTicks - t0) >= 1000);
@@ -129,7 +149,7 @@ PT_THREAD(CliThread(struct pt *pt)) {
     PT_BEGIN(pt);
 
     while (1) {
- t0 = msTicks;
+        t0 = msTicks;
         UART1_WriteString11("Cli!\n\r");
         PT_WAIT_UNTIL(pt, UART1_TransmitComplete());
 

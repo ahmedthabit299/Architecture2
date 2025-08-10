@@ -125,7 +125,8 @@ int main(void) {
      */
     SYS_Initialize(NULL);
 
-
+    // main.c
+    ESP32_UartInit(); // call after SYS_Initialize
 
     // === UART test = One-time UART startup messages  ===
     UART1_Write((uint8_t *) "1 Hello ESP32!\r\n", 16);
@@ -146,14 +147,9 @@ int main(void) {
     BSP_UART3_Init();
 
     /** Layer 3: Protothreads scheduler initialization */
-    Protothreads_Init(); 
+    Protothreads_Init();
 
     (void) __builtin_enable_interrupts();
-
-
-    // === UART test = One-time UART startup messages  ===
-    UART1_Write((uint8_t *) "4 Hello ESP32!\r\n", 14);
-    UART3_Write((uint8_t *) "AT\r\n", 4);
 
     //    //===  Register UART3 receive callback for Telit responses === interrupt-based notification =====
     //    UART3_ReadCallbackRegister(telit_rx_callback, 0);
@@ -162,36 +158,16 @@ int main(void) {
     //    
     //    BSP_UART3_Init();          // register the Telit UART3 callback
 
-
     while (true) {
         /* Maintain state machines of all polled MPLAB Harmony modules. */
-        //         UART1_WriteString("bSending NOooSMS...\r\n");
-
         SYS_Tasks();
 
-        //        UART1_WriteString("ASending NOooSMS...\r\n");
-
-        // Run each Protothread once per loop
+        // Cooperatively run each Protothread once per loop
         SensorThread(&ptSensor);
         TelitThread(&ptTelit);
         Esp32Thread(&ptEsp32);
         EthThread(&ptEth);
         CliThread(&ptCLI);
-
-
-
-        // === (Optional) Polling-based UART3 RX ? avoid redundancy ===
-        // This can conflict with interrupt-based read.
-        // Keep only for early debug/testing, then remove or disable.
-        /*
-        uint8_t rxData[128];
-        size_t rxLen = UART3_Read(rxData, sizeof(rxData));
-        if (rxLen > 0)
-        {
-            UART1_Write(rxData, rxLen);
-         //
-        }
-         */
 
     }
 

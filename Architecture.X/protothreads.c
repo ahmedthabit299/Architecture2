@@ -94,37 +94,67 @@ PT_THREAD(TelitThread(struct pt *pt)) {
     PT_END(pt);
 }
 
-/* ????????? Esp32Thread ????????? */
-PT_THREAD(Esp32Thread(struct pt *pt)) {
-    static uint32_t t0;
+
+
+
+PT_THREAD(Esp32Thread(struct pt *pt))
+{
     PT_BEGIN(pt);
-    // Register app-level handler once
-    ESP32_RegisterFrameHandler(Esp_HandleFrame); // you implement this
+
+    // Do this ONCE (or move both calls to main() right after SYS_Initialize)
+    static bool inited = false;
+    if (!inited) {
+        ESP32_UartInit();
+        ESP32_RegisterFrameHandler(Esp_HandleFrame);
+        inited = true;
+    }
 
     while (1) {
-        t0 = msTicks;
-        //        PT_WAIT_UNTIL(pt, esp32DataReady());
-        //        uint8_t buf[128];
-        //        int len = UART1_Read(buf, sizeof (buf));
-        // === UART test = One-time UART startup messages  ===
-        //UART1_Write((uint8_t *) "ESP32!\n", sizeof ("ESP32!\n") + 16);
+        // Wait until at least 1 byte is in UART1 RX ring
+        PT_WAIT_UNTIL(pt, UART1_ReadCountGet() > 0);
 
-        // wait for RX or add a timed poll
-        PT_WAIT_UNTIL(pt, /* rx flag from Option B */ true);
+        // Drain and assemble frames (will call Esp_HandleFrame on a full, valid one)
         ESP32_Poll();
 
-        UART1_WriteString11("ESP32!\n\r");
-        PT_WAIT_UNTIL(pt, UART1_TransmitComplete());
-        // protothreads.c (Esp32Thread)
-//        PT_WAIT_UNTIL(pt, ESP32_TakeRxFlag() /* or timeout condition */);
-
-        UART3_Write((uint8_t *) "PT AT\r\n", 4);
-        //        handleEsp32(buf, len);
-        PT_WAIT_UNTIL(pt, (msTicks - t0) >= 1000);
+        // Yield cooperatively so others can run
+        PT_YIELD(pt);
     }
 
     PT_END(pt);
 }
+
+///* ????????? Esp32Thread ????????? */
+//PT_THREAD(Esp32Thread(struct pt *pt)) {
+//    static uint32_t t0;
+//    PT_BEGIN(pt);
+//    ESP32_UartInit();
+//    // Register app-level handler once
+//    ESP32_RegisterFrameHandler(Esp_HandleFrame); // you implement this
+//
+//    while (1) {
+//        t0 = msTicks;
+//        //        PT_WAIT_UNTIL(pt, esp32DataReady());
+//        //        uint8_t buf[128];
+//        //        int len = UART1_Read(buf, sizeof (buf));
+//        // === UART test = One-time UART startup messages  ===
+//        //UART1_Write((uint8_t *) "ESP32!\n", sizeof ("ESP32!\n") + 16);
+//
+//        // wait for RX or add a timed poll
+//        PT_WAIT_UNTIL(pt, /* rx flag from Option B */ true);
+//        ESP32_Poll();
+//
+//        UART1_WriteString11("ESP32!\n\r");
+//        PT_WAIT_UNTIL(pt, UART1_TransmitComplete());
+//        // protothreads.c (Esp32Thread)
+////        PT_WAIT_UNTIL(pt, ESP32_TakeRxFlag() /* or timeout condition */);
+//
+//        UART3_Write((uint8_t *) "PT AT\r\n", 4);
+//        //        handleEsp32(buf, len);
+//        PT_WAIT_UNTIL(pt, (msTicks - t0) >= 1000);
+//    }
+//
+//    PT_END(pt);
+//}
 
 /* ????????? EthThread ???????????? */
 PT_THREAD(EthThread(struct pt *pt)) {

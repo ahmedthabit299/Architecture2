@@ -197,8 +197,8 @@ void SYS_Initialize(void* data) {
     GPIO_Initialize();
 //LATA = 0x8000; /* LED ON worked here*/
     
-
-   LATA = 0x8000; /* LED ON */
+//
+//   LATA = 0x8000; /* LED ON */
 
     UART1_Initialize();
     

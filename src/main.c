@@ -167,7 +167,7 @@ int main(void) {
         //        SensorThread(&ptSensor);
         //        TelitThread(&ptTelit);
         Esp32Thread(&ptEsp32);
-        Esp32TxTestThread(&ptEspTxTest);
+        //Esp32TxTestThread(&ptEspTxTest);
 
         //        EthThread(&ptEth);
         //        CliThread(&ptCLI);

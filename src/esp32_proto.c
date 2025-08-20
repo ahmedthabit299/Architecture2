@@ -223,26 +223,40 @@ void Esp_HandleFrame(const uint8_t* payload, size_t len) {
 
         case OPC_SET:
         {
+            uint8_t led_seen = 0;
+            uint8_t led_v = 0;
+
             // Apply each TLV in request
             while (rem >= 2) {
+                uint8_t tag = q[0];
                 uint8_t l = q[1];
                 if (rem < (size_t) (2 + l)) {
                     status = ST_BAD_TLV;
                     break;
                 }
+
                 uint8_t st_each = ST_OK;
                 bool ok = tlv_apply(q, 2 + l, &st_each);
-                if (!ok && status == ST_OK) status = st_each; // first error
+                if (!ok && status == ST_OK) status = st_each; // remember first error
+
+                // If LED TLV present, remember the value (0/1)
+                if (tag == T_LED_STATE && l == 1) {
+                    led_seen = 1;
+                    led_v = q[2] ? 1u : 0u;
+                }
+
                 q += 2 + l;
                 rem -= 2 + l;
             }
             if (rem != 0 && status == ST_OK) status = ST_BAD_TLV;
 
-            // Optional: include an ACK TLV with final status
-            uint8_t ack = (status == ST_OK) ? 1u : 0u;
+            // ACK TLV (A0): put LED value if it was set; otherwise 1=OK, 0=error
+            uint8_t ack = led_seen ? led_v : ((status == ST_OK) ? 1u : 0u);
             (void) put_tlv(rsp, sizeof (rsp), &ri, 0xA0, &ack, 1);
+
             break;
         }
+
 
         default:
             status = ST_UNKNOWN_OP;
@@ -251,8 +265,8 @@ void Esp_HandleFrame(const uint8_t* payload, size_t len) {
 
     // Fill status and send
     rsp[1] = status;
-    ESP32_SendFrame(rsp, ri);   // enable
-//#if 0  // <- disable framed ACK while testing with RealTerm
-//    ESP32_SendFrame(rsp, ri);
-//#endif
+    ESP32_SendFrame(rsp, ri); // enable
+    //#if 0  // <- disable framed ACK while testing with RealTerm
+    //    ESP32_SendFrame(rsp, ri);
+    //#endif
 }

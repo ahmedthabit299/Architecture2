@@ -219,7 +219,7 @@ void Esp_HandleFrame(const uint8_t* payload, size_t len) {
                 rem -= 2 + l;
             }
             if (status == ST_OK && last_led != 0xFF)
-                put_tlv(rsp, sizeof rsp, &ri, 0xA0, &last_led, 1);
+                put_tlv(rsp, sizeof rsp, &ri, 0xA0, &last_led, 1); // ACK(ON/OFF)
             break;
         }
 

@@ -210,7 +210,7 @@ void SYS_Initialize(void* data) {
     
     
     
-     UART1_WriteString("PDMSending NOooSMS...\r\n");
+//     UART1_WriteString("PDMSending NOooSMS...\r\n");
     
     
     
@@ -219,7 +219,7 @@ void SYS_Initialize(void* data) {
     
 
     
-    UART1_WriteString("Sending NOooSMS...\r\n");
+//    UART1_WriteString("Sending NOooSMS...\r\n");
     
 //    LED_LED1_TRIS = OUTPUT;
 //    LED_LED1_LAT = LED_ON;

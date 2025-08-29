@@ -130,10 +130,10 @@ int main(void) {
 
 
     // === UART test = One-time UART startup messages  ===
-    UART1_Write((uint8_t *) "1 Hello ESP32!\r\n", 16);
+//    UART1_Write((uint8_t *) "1 Hello ESP32!\r\n", 16);
     UART3_Write((uint8_t *) "AT\r\n", 4);
-    UART1_WriteString("2 Sending NOooSMS...\r\n");
-    UART1_WriteString("3 TSSSSending SMS...\r\n");
+//    UART1_WriteString("2 Sending NOooSMS...\r\n");
+//    UART1_WriteString("3 TSSSSending SMS...\r\n");
 
     /**
      * @brief Layer 1 helpers.
@@ -146,6 +146,16 @@ int main(void) {
      * - Attach/register parser callback
      */
     BSP_UART3_Init();
+
+
+    // somewhere in main loop (once after ESP32_UartInit)
+    static bool test_out_once = false;
+    if (!test_out_once) {
+        const uint8_t ping[] = {0x81, 0x00, 0x01, 0x04, 'P', 'I', 'N', 'G'}; // ROP=0x81, STATUS=OK, TLV tag=1, len=4, "PING"
+        ESP32_SendFrame(ping, sizeof ping);
+        test_out_once = true;
+    }
+
 
     /** Layer 3: Protothreads scheduler initialization */
     Protothreads_Init();

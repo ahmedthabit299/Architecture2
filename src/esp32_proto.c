@@ -34,6 +34,36 @@ enum {
     T_LED_STATE = 0x10, // u8  (0=off,1=on)
 };
 
+static inline uint32_t PBCLK_Hz(void)
+{
+    return UART1_FrequencyGet()/2;   // <-- change here if you change clocks
+}
+
+/* Actual UART1 baud from hardware registers */
+uint32_t uart1_calc_baud(void)
+{
+    const uint32_t pbclk = PBCLK_Hz();
+    const uint32_t brgh  = (U1MODE & _U1MODE_BRGH_MASK) ? 1u : 0u;
+    const uint32_t div   = brgh ? 4u : 16u;          // BRGH=1 ? 4x, BRGH=0 ? 16x
+    const uint32_t brg   = (uint32_t)U1BRG;          // BRG register
+
+    /* baud = PBCLK / (div * (BRG + 1)) */
+    return pbclk / (div * (brg + 1u));
+}
+
+/* Optional: percentage error vs a target baud (e.g. 115200) *10000 = 0.01% units */
+int32_t uart1_baud_err_ppm(uint32_t target, int32_t *percent_x100)
+{
+    uint32_t actual = uart1_calc_baud();
+    if (percent_x100)
+    {
+        // percent in 0.01% units (2 decimal places)
+        int64_t num = ((int64_t)actual - (int64_t)target) * 10000;
+        *percent_x100 = (int32_t)(num / (int64_t)target);
+    }
+    return (int32_t)actual;
+}
+
 /* -------------------- Small hardware helpers -------------------- */
 static inline void led_set(bool on) {
     // RA15 example (adjust to your board/BSP)
@@ -88,13 +118,10 @@ static bool tlv_get_reply(uint8_t tag, uint8_t* out, size_t cap, size_t* idx) {
         }
         case T_UART1_BAUD:
         {
-            // You may not know current baud from hardware; return "configured" value if tracked.
-            // For now, report the divisor-based approximate baud from PBCLK/BRG (BRGH=0 in PLIB).
-            uint32_t pb = get_pbclk_hz();
-            uint32_t uxbrg = U1BRG;
-            uint32_t baud = (pb >> 4) / (uxbrg + 1u);
+            uint32_t baud = uart1_calc_baud();
             return put_tlv_u32(out, cap, idx, T_UART1_BAUD, baud);
         }
+
         case T_LED_STATE:
         {
             // Can't read back LAT state reliably if pin is input; we know we drive it as output:
@@ -222,6 +249,28 @@ void Esp_HandleFrame(const uint8_t* payload, size_t len) {
                 put_tlv(rsp, sizeof rsp, &ri, 0xA0, &last_led, 1); // ACK(ON/OFF)
             break;
         }
+        case OPC_GET:
+        {
+            while (rem >= 2) {
+                uint8_t tag = q[0];
+                uint8_t l = q[1];
+                if (rem < (size_t) (2 + l)) {
+                    status = ST_BAD_TLV;
+                    break;
+                }
+
+                if (!tlv_get_reply(tag, rsp, sizeof (rsp), &ri)) {
+                    status = ST_BAD_LEN;
+                    break;
+                }
+                q += 2 + l;
+                rem -= 2 + l;
+            }
+            if (rem != 0 && status == ST_OK) status = ST_BAD_TLV;
+            break;
+        }
+
+
 
 
 

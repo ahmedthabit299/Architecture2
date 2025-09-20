@@ -197,7 +197,7 @@ PT_THREAD(TelitThread(struct pt *pt)) {
         PT_WAIT_UNTIL(pt, (msTicks - last_send) >= SMS_PERIOD_MS);
 
         /* ======= SEND ONE SMS =======888 */
-        int x=0;
+        
         /* 1) Issue CMGS with the destination number */
         {
             UART3_WriteString33("AT\r\n");

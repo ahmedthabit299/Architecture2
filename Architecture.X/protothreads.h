@@ -13,6 +13,7 @@ extern struct pt ptEsp32;
 extern struct pt ptEspTxTest;
 extern struct pt ptEth;
 extern struct pt ptCLI;
+extern struct pt ptPreflight;
 
 
 
@@ -23,6 +24,7 @@ PT_THREAD( Esp32Thread(struct pt *pt) );
 PT_THREAD( Esp32TxTestThread(struct pt *pt) );
 PT_THREAD( EthThread   (struct pt *pt) );
 PT_THREAD( CliThread   (struct pt *pt) );
+PT_THREAD( TelitPreflightThread (struct pt *pt) );
 
 // Call once before entering main loop
 void Protothreads_Init(void);

@@ -130,10 +130,10 @@ int main(void) {
 
 
     // === UART test = One-time UART startup messages  ===
-//    UART1_Write((uint8_t *) "1 Hello ESP32!\r\n", 16);
-    UART3_Write((uint8_t *) "AT\r\n", 4);
-//    UART1_WriteString("2 Sending NOooSMS...\r\n");
-//    UART1_WriteString("3 TSSSSending SMS...\r\n");
+    //    UART1_Write((uint8_t *) "1 Hello ESP32!\r\n", 16);
+    //    UART3_Write((uint8_t *) "AT\r\n", 4);
+    //    UART1_WriteString("2 Sending NOooSMS...\r\n");
+    //    UART1_WriteString("3 TSSSSending SMS...\r\n");
 
     /**
      * @brief Layer 1 helpers.
@@ -160,6 +160,12 @@ int main(void) {
     /** Layer 3: Protothreads scheduler initialization */
     Protothreads_Init();
 
+    // in main(), after BSP_UART3_Init() and before enabling interrupts:
+    UART3_ReadCallbackRegister(telit_rx_callback, 0);
+    UART3_ReadThresholdSet(1);
+    UART3_ReadNotificationEnable(true, true); // persistent notify
+
+
     (void) __builtin_enable_interrupts();
 
     //    //===  Register UART3 receive callback for Telit responses === interrupt-based notification =====
@@ -169,16 +175,35 @@ int main(void) {
     //    
     //    BSP_UART3_Init();          // register the Telit UART3 callback
 
+    // -------- BOOT PHASE: run preflight until it returns PT_END --------
+    static volatile bool preflight_running = true;
+    int f=0;
+
+    while (preflight_running) {
+        SYS_Tasks();
+
+        // returns 1 while still running, 0 when hits PT_END
+        preflight_running = !PT_SCHEDULE(TelitPreflightThread(&ptPreflight));
+
+        // keep other threads alive during boot if needed
+        PT_SCHEDULE(Esp32Thread(&ptEsp32));
+
+    }
+
     while (true) {
         /* Maintain state machines of all polled MPLAB Harmony modules. */
         SYS_Tasks();
 
         // Cooperatively run each Protothread once per loop
         //        SensorThread(&ptSensor);
+        if(f==0){
+        UART3_WriteString33("T-est AT\r\n");
+        f=f+1;
+        }
         TelitThread(&ptTelit);
         Esp32Thread(&ptEsp32);
-        //Esp32TxTestThread(&ptEspTxTest);
 
+        //        Esp32TxTestThread(&ptEspTxTest);
         //        EthThread(&ptEth);
         //        CliThread(&ptCLI);
 

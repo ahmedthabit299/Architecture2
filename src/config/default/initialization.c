@@ -61,8 +61,8 @@
 #pragma config USERID =     0xffff
 
 /*** FICD ***/
-#pragma config JTAGEN =     OFF
-#pragma config ICS =     PGx2
+#pragma config JTAGEN =     ON
+#pragma config ICS =     PGx1
 
 /*** FPOR ***/
 #pragma config BOREN =    BOR3

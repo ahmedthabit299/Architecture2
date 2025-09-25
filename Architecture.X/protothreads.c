@@ -33,8 +33,18 @@ extern volatile uint32_t msTicks;
 extern volatile bool     sms_enabled= true;
 extern volatile unsigned sms_count=1;
 
+uint8_t sms_get_enabled(void)
+{
+    return sms_enabled ? 1u : 0u;
+}
+
 // One pt struct per thread
 struct pt ptSensor, ptTelit, ptEsp32, ptEth, ptCLI, ptEspTxTest, ptPreflight;
+
+void handle_sms_enable_cmd(uint8_t flag) {
+    sms_enabled = (flag != 0);
+    sms_count = 0;            // optional: reset attempts
+}
 
 void UART1_SendChar11(char c) {
     while (U1STAbits.UTXBF);

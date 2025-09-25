@@ -31,5 +31,8 @@
 
 // ALARM control
 #define TAG_ALARM_RST  0x01   // u8 (1=reset)
+// TLV tags
+#define T_SMS_EN   0x20    // NEW: SMS enable flag (u8: 0=off, 1=on)
+
 
 // framing helpers you already use (length, CRC16-CCITT) stay unchanged

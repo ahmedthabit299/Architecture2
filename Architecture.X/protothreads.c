@@ -30,11 +30,10 @@ extern bool ESP32_TakeRxFlag(void); // if you added it; else just call ESP32_Pol
 // Millisecond tick, incremented in Timer1 ISR
 extern volatile uint32_t msTicks;
 
-extern volatile bool     sms_enabled= true;
-extern volatile unsigned sms_count=1;
+extern volatile bool sms_enabled = true;
+extern volatile unsigned sms_count = 1;
 
-uint8_t sms_get_enabled(void)
-{
+uint8_t sms_get_enabled(void) {
     return sms_enabled ? 1u : 0u;
 }
 
@@ -43,7 +42,7 @@ struct pt ptSensor, ptTelit, ptEsp32, ptEth, ptCLI, ptEspTxTest, ptPreflight;
 
 void handle_sms_enable_cmd(uint8_t flag) {
     sms_enabled = (flag != 0);
-    sms_count = 0;            // optional: reset attempts
+    sms_count = 0; // optional: reset attempts
 }
 
 void UART1_SendChar11(char c) {
@@ -118,51 +117,52 @@ static bool rx_wait_any(const char *const toks[], int ntoks, uint32_t t0, uint32
 }
 
 /* === helpers (put near your other RX helpers) === */
-static bool rx_wait_cpin(uint32_t t0, uint32_t timeout_ms, int *which)
-{
+static bool rx_wait_cpin(uint32_t t0, uint32_t timeout_ms, int *which) {
     rx_accumulate();
 
     char *p = strstr(g_rx_acc, "+CPIN:");
     if (p) {
-        p += 6;                         // past "+CPIN:"
-        while (*p==' '||*p=='\t') p++;  // skip spaces
+        p += 6; // past "+CPIN:"
+        while (*p == ' ' || *p == '\t') p++; // skip spaces
 
         // grab token to end-of-line
         const char *s = p;
-        while (*p && *p!='\r' && *p!='\n') p++;
-        size_t n = (size_t)(p - s);
-        while (n && (s[n-1]==' '||s[n-1]=='\t')) n--;  // trim
+        while (*p && *p != '\r' && *p != '\n') p++;
+        size_t n = (size_t) (p - s);
+        while (n && (s[n - 1] == ' ' || s[n - 1] == '\t')) n--; // trim
 
-        int res = 3;                    // other/error
-        if (n==5 && !memcmp(s,"READY",5))        res = 0;
-        else if (n==7 && !memcmp(s,"SIM PIN",7)) res = 1;
-        else if (n==7 && !memcmp(s,"SIM PUK",7)) res = 2;
+        int res = 3; // other/error
+        if (n == 5 && !memcmp(s, "READY", 5)) res = 0;
+        else if (n == 7 && !memcmp(s, "SIM PIN", 7)) res = 1;
+        else if (n == 7 && !memcmp(s, "SIM PUK", 7)) res = 2;
 
         if (which) *which = res;
 
         // consume the whole line (and its CRLF)
-        while (*p && *p!='\n') p++;
-        if (*p=='\n') p++;
-        size_t cut = (size_t)(p - g_rx_acc);
+        while (*p && *p != '\n') p++;
+        if (*p == '\n') p++;
+        size_t cut = (size_t) (p - g_rx_acc);
         memmove(g_rx_acc, g_rx_acc + cut, g_rx_len + 1 - cut);
         g_rx_len -= (g_rx_len >= cut) ? cut : g_rx_len;
 
         return true;
     }
 
-    if ((uint32_t)(msTicks - t0) >= timeout_ms) { if (which) *which = -1; return true; }
+    if ((uint32_t) (msTicks - t0) >= timeout_ms) {
+        if (which) *which = -1;
+        return true;
+    }
     return false;
 }
 
-static bool rx_wait_creg_ok(uint32_t t0, uint32_t timeout_ms, bool *ok_out)
-{
+static bool rx_wait_creg_ok(uint32_t t0, uint32_t timeout_ms, bool *ok_out) {
     rx_accumulate();
     char *p = strstr(g_rx_acc, "+CREG:");
     if (p) {
         // consume that whole line
-        while (*p && *p!='\n') p++;
-        if (*p=='\n') p++;
-        size_t cut = (size_t)(p - g_rx_acc);
+        while (*p && *p != '\n') p++;
+        if (*p == '\n') p++;
+        size_t cut = (size_t) (p - g_rx_acc);
         // decide 1/5 = registered
         bool ok = (strstr(g_rx_acc, ",1") || strstr(g_rx_acc, ",5")) != NULL;
         if (ok_out) *ok_out = ok;
@@ -170,10 +170,12 @@ static bool rx_wait_creg_ok(uint32_t t0, uint32_t timeout_ms, bool *ok_out)
         g_rx_len -= (g_rx_len >= cut) ? cut : g_rx_len;
         return true;
     }
-    if ((uint32_t)(msTicks - t0) >= timeout_ms) { if (ok_out) *ok_out = false; return true; }
+    if ((uint32_t) (msTicks - t0) >= timeout_ms) {
+        if (ok_out) *ok_out = false;
+        return true;
+    }
     return false;
 }
-
 
 /* Send Ctrl+Z */
 static inline void uart3_ctrl_z(void) {
@@ -270,21 +272,32 @@ PT_THREAD(TelitThread(struct pt *pt)) {
 
         /* ======= SEND ONE SMS =======888 */
         /* gate by flags */
-        if (!sms_enabled || sms_count >= 3) {    // cap attempts if you want
+        if (!sms_enabled || sms_count >= 3) { // cap attempts if you want
             last_send = msTicks;
             PT_YIELD(pt);
             continue;
         }
-        
+
         /* 1) Issue CMGS with the destination number */
         {
             UART3_WriteString33("AT\r\n");
             rx_wait_begin(&t0);
+
             PT_WAIT_UNTIL(pt, rx_wait_any((const char*[]) {
                 "OK", "ERROR"
             }, 2, t0, AT_TIMEOUT(1000), &which));
+
+            /* 1) Issue CMGS with the destination number */
+            const char* dest = phonebook_get_number(phonebook_get_default());
+            if (!dest) {
+                // No default number set ? skip or log error
+                last_send = msTicks;
+                continue;
+            }
+
             char cmd[64];
-            snprintf(cmd, sizeof (cmd), "AT+CMGS=\"%s\"\r\n", SMS_NUMBER);
+            snprintf(cmd, sizeof (cmd), "AT+CMGS=\"%s\"\r\n", dest);
+            //snprintf(cmd, sizeof (cmd), "AT+CMGS=\"%s\"\r\n", SMS_NUMBER);
             UART3_WriteString33(cmd);
         }
 
@@ -329,7 +342,7 @@ PT_THREAD(TelitThread(struct pt *pt)) {
                 PT_YIELD(pt); /* don?t block CPU; yield until next tick */
             }
         }
-         sms_count = sms_count+1;
+        sms_count = sms_count + 1;
         /* Mark the time of this attempt; loop will send again after 10s */
         last_send = msTicks;
 
@@ -341,9 +354,7 @@ PT_THREAD(TelitThread(struct pt *pt)) {
     PT_END(pt);
 }
 
-
-PT_THREAD(TelitPreflightThread(struct pt *pt))
-{
+PT_THREAD(TelitPreflightThread(struct pt *pt)) {
     static uint32_t t0, t1;
     static int cpin, which;
     static bool ok;
@@ -362,11 +373,12 @@ PT_THREAD(TelitPreflightThread(struct pt *pt))
 
     /* SIM ready?  poll AT+CPIN? until READY */
     for (;;) {
-        rx_wait_begin(&t0);                       // <-- open window FIRST
+        rx_wait_begin(&t0); // <-- open window FIRST
         UART3_WriteString33("AT+CPIN?\r");
         PT_WAIT_UNTIL(pt, rx_wait_cpin(t0, 4000, &cpin));
-        if (cpin == 0) break;                     // 0=READY (from rx_wait_cpin)
-        t1 = msTicks; PT_WAIT_UNTIL(pt, (msTicks - t1) >= 500);
+        if (cpin == 0) break; // 0=READY (from rx_wait_cpin)
+        t1 = msTicks;
+        PT_WAIT_UNTIL(pt, (msTicks - t1) >= 500);
     }
 
     /* Registered on network? poll CREG until ,1 or ,5 */
@@ -375,18 +387,23 @@ PT_THREAD(TelitPreflightThread(struct pt *pt))
         UART3_WriteString33("AT+CREG?\r");
         PT_WAIT_UNTIL(pt, rx_wait_creg_ok(t0, 2000, &ok));
         if (ok) break;
-        t1 = msTicks; PT_WAIT_UNTIL(pt, (msTicks - t1) >= 1000);
+        t1 = msTicks;
+        PT_WAIT_UNTIL(pt, (msTicks - t1) >= 1000);
     }
 
     /* SMS text mode */
     rx_wait_begin(&t0);
     UART3_WriteString33("AT+CMGF=1\r");
-    PT_WAIT_UNTIL(pt, rx_wait_any((const char*[]){"OK","+CMS ERROR"}, 2, t0, 3000, &which));
+
+    PT_WAIT_UNTIL(pt, rx_wait_any((const char*[]) {
+        "OK", "+CMS ERROR"}, 2, t0, 3000, &which));
 
     /* GSM charset (optional) */
     rx_wait_begin(&t0);
     UART3_WriteString33("AT+CSCS=\"GSM\"\r");
-    PT_WAIT_UNTIL(pt, rx_wait_any((const char*[]){"OK","+CME ERROR","+CMS ERROR"}, 3, t0, 3000, &which));
+
+    PT_WAIT_UNTIL(pt, rx_wait_any((const char*[]) {
+        "OK", "+CME ERROR", "+CMS ERROR"}, 3, t0, 3000, &which));
 
     PT_END(pt);
 }

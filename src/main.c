@@ -196,10 +196,10 @@ int main(void) {
 
         // Cooperatively run each Protothread once per loop
         //        SensorThread(&ptSensor);
-        if(f==0){
-        UART3_WriteString33("T-est AT\r\n");
-        f=f+1;
-        }
+//        if(f==0){
+//        UART3_WriteString33("T-est AT\r\n");
+//        f=f+1;
+//        }
         TelitThread(&ptTelit);
         Esp32Thread(&ptEsp32);
 

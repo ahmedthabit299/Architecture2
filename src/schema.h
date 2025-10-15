@@ -13,8 +13,10 @@ typedef struct {
 } InputCfg;
 
 typedef struct {
-  char numbers[16][24];   // E164 or local; zero-terminated
+    char numbers[16][24];
+    uint8_t default_index;    // 0..15 ? the default slot for outgoing SMS
 } PhonebookCfg;
+
 
 typedef struct {
   GlobalCfg   global;

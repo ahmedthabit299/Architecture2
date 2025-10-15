@@ -7,6 +7,7 @@
 #include "esp32_comm.h"                         // ESP32_SendFrame(...)
 #include "peripheral/uart/plib_uart1.h"         // UART1_SerialSetup, etc.
 #include "peripheral/uart/plib_uart_common.h"   // UART_SERIAL_SETUP
+#include "schema.h"        // <-- Add this line
 
 // extern time base (from your Timer1 tick)
 extern volatile uint32_t msTicks;
@@ -109,10 +110,38 @@ static inline uint32_t PBCLK_Hz(void) {
 // at top of file
 
 enum {
-    T_SMS_EN = 0x20
+    T_SMS_EN = 0x20,
+    T_PHONEBOOK_SET = 0x40, // slot + number (variable length)
+    T_PHONEBOOK_LIST = 0x41, // no payload
+    T_PHONEBOOK_DEF = 0x42, // one?byte slot index
 };
 extern void handle_sms_enable_cmd(uint8_t flag); // implemented in protothreads.c
 extern uint8_t sms_get_enabled(void);
+
+void send_phonebook_list(void) {
+    // Build an output payload: for simplicity send each number as slot-index:string pairs
+    uint8_t rsp[128];
+    size_t idx = 0;
+
+    // Start with an opcode that your Android app understands,
+    // e.g. OPC_GET or your own OPC_PHONEBOOK
+    rsp[idx++] = OPC_PING;          // or another opcode
+    rsp[idx++] = ST_OK;             // status
+
+    for (uint8_t i = 0; i < 16; i++) {
+        const char *num = g_cfg.phonebook.numbers[i];
+        if (num[0] != '\0') {
+            size_t len = strlen(num);
+            if (idx + 2 + len >= sizeof rsp) break;
+            rsp[idx++] = T_PHONEBOOK_SET; // reuse or define a T_PHONEBOOK_ENTRY tag
+            rsp[idx++] = (uint8_t)(1 + len);
+            rsp[idx++] = i;               // slot index
+            memcpy(&rsp[idx], num, len);
+            idx += len;
+        }
+    }
+    ESP32_SendFrame(rsp, idx);
+}
 
 static inline bool put_u16le(uint8_t* b, size_t cap, size_t* idx, uint16_t v) {
     if (*idx + 2 > cap) return false;
@@ -230,6 +259,50 @@ static bool tlv_apply(const uint8_t* p, size_t plen, uint8_t* st_out) {
             handle_sms_enable_cmd(p[2] ? 1u : 0u);
             *st_out = ST_OK;
             return true;
+        case T_PHONEBOOK_SET:
+        {
+            /* p[2] = slot (0?15); p+3..p+len-1 = ASCII number */
+            if (len < 2) {
+                *st_out = ST_BAD_TLV;
+                return false;
+            }
+            uint8_t slot = p[2];
+            if (slot >= 16) {
+                *st_out = ST_BAD_TLV;
+                return false;
+            }
+            /* copy number (ensure zero?termination and max 23 chars) */
+            char num[24] = {0};
+            size_t copylen = len - 1;
+            if (copylen > 23) copylen = 23;
+            memcpy(num, &p[3], copylen);
+            phonebook_set_number(slot, num);
+            *st_out = ST_OK;
+            return true;
+        }
+        case T_PHONEBOOK_LIST:
+        {
+            /* no payload; respond to app with a TLV listing the numbers */
+            send_phonebook_list();
+            *st_out = ST_OK;
+            return true;
+        }
+        case T_PHONEBOOK_DEF:
+        {
+            if (len != 1) {
+                *st_out = ST_BAD_TLV;
+                return false;
+            }
+            uint8_t slot = p[2];
+            if (slot >= 16) {
+                *st_out = ST_BAD_TLV;
+                return false;
+            }
+            phonebook_set_default(slot);
+            *st_out = ST_OK;
+            return true;
+        }
+
         case T_UART1_BAUD:
         {
             if (len != 4) {

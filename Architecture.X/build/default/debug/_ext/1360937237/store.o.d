@@ -1,4 +1,6 @@
 build/default/debug/_ext/1360937237/store.o: ../src/store.c \
- ../src/schema.h
+ ../src/flash_w25q32.h ../src/schema.h
+
+../src/flash_w25q32.h:
 
 ../src/schema.h:

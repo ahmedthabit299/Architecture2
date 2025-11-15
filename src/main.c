@@ -54,7 +54,7 @@
 #include "lc-switch.h"
 #include "../Architecture.X/protothreads.h"
 #include "bsp.h"
-
+#include "flash_w25q32.h"
 
 
 
@@ -128,7 +128,8 @@ int main(void) {
     // main.c
     ESP32_UartInit(); // call after SYS_Initialize
 
-
+    //Cfg_Load(); // load config from external flash
+    
     // === UART test = One-time UART startup messages  ===
     //    UART1_Write((uint8_t *) "1 Hello ESP32!\r\n", 16);
     //    UART3_Write((uint8_t *) "AT\r\n", 4);
@@ -177,7 +178,7 @@ int main(void) {
 
     // -------- BOOT PHASE: run preflight until it returns PT_END --------
     static volatile bool preflight_running = true;
-    int f=0;
+    int f = 0;
 
     while (preflight_running) {
         SYS_Tasks();
@@ -196,10 +197,10 @@ int main(void) {
 
         // Cooperatively run each Protothread once per loop
         //        SensorThread(&ptSensor);
-//        if(f==0){
-//        UART3_WriteString33("T-est AT\r\n");
-//        f=f+1;
-//        }
+        //        if(f==0){
+        //        UART3_WriteString33("T-est AT\r\n");
+        //        f=f+1;
+        //        }
         TelitThread(&ptTelit);
         Esp32Thread(&ptEsp32);
 

@@ -43,6 +43,7 @@
         <itemPath>../src/esp32_proto.h</itemPath>
         <itemPath>../src/io_monitor.h</itemPath>
         <itemPath>../src/gsm_le910.h</itemPath>
+        <itemPath>../src/flash_w25q32.h</itemPath>
       </logicalFolder>
       <itemPath>../src/pt.h</itemPath>
       <itemPath>../src/lc-switch.h</itemPath>
@@ -111,6 +112,7 @@
         <itemPath>../src/alarm_mgr.c</itemPath>
         <itemPath>../src/gsm_le910.c</itemPath>
         <itemPath>../src/sms_service.c</itemPath>
+        <itemPath>../src/flash_w25q32.c</itemPath>
       </logicalFolder>
       <logicalFolder name="f1" displayName="middlewarelayer" projectFiles="true">
         <itemPath>../src/telit.h</itemPath>

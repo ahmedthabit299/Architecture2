@@ -82,6 +82,26 @@
 #define GPIO_RB3_RST_EtherNet_GetLatch()          ((LATB >> 3) & 0x1)
 #define GPIO_RB3_RST_EtherNet_PIN                  GPIO_PIN_RB3
 
+/*** Macros for GPIO_RC11_SD_SS3 pin ***/
+#define GPIO_RC11_SD_SS3_Set()               (LATCSET = (1<<11))
+#define GPIO_RC11_SD_SS3_Clear()             (LATCCLR = (1<<11))
+#define GPIO_RC11_SD_SS3_Toggle()            (LATCINV= (1<<11))
+#define GPIO_RC11_SD_SS3_OutputEnable()      (TRISCCLR = (1<<11))
+#define GPIO_RC11_SD_SS3_InputEnable()       (TRISCSET = (1<<11))
+#define GPIO_RC11_SD_SS3_Get()               ((PORTC >> 11) & 0x1)
+#define GPIO_RC11_SD_SS3_GetLatch()          ((LATC >> 11) & 0x1)
+#define GPIO_RC11_SD_SS3_PIN                  GPIO_PIN_RC11
+
+/*** Macros for GPIO_RA9_FL_SS3 pin ***/
+#define GPIO_RA9_FL_SS3_Set()               (LATASET = (1<<9))
+#define GPIO_RA9_FL_SS3_Clear()             (LATACLR = (1<<9))
+#define GPIO_RA9_FL_SS3_Toggle()            (LATAINV= (1<<9))
+#define GPIO_RA9_FL_SS3_OutputEnable()      (TRISACLR = (1<<9))
+#define GPIO_RA9_FL_SS3_InputEnable()       (TRISASET = (1<<9))
+#define GPIO_RA9_FL_SS3_Get()               ((PORTA >> 9) & 0x1)
+#define GPIO_RA9_FL_SS3_GetLatch()          ((LATA >> 9) & 0x1)
+#define GPIO_RA9_FL_SS3_PIN                  GPIO_PIN_RA9
+
 /*** Macros for GPIO_RD2_SS_Ethernet pin ***/
 #define GPIO_RD2_SS_Ethernet_Set()               (LATDSET = (1<<2))
 #define GPIO_RD2_SS_Ethernet_Clear()             (LATDCLR = (1<<2))

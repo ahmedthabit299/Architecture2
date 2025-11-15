@@ -208,6 +208,7 @@ void SYS_Initialize(void* data) {
     UART2_Initialize();
     UART3_Initialize();
     
+	SPI3_Initialize();
     
     
 //     UART1_WriteString("PDMSending NOooSMS...\r\n");

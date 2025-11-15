@@ -9,6 +9,7 @@ build/default/debug/_ext/1360937237/w5500if.o: ../src/w5500if.c \
  ../src/config/default/peripheral/uart/plib_uart_common.h \
  ../src/config/default/peripheral/uart/plib_uart1.h \
  ../src/config/default/peripheral/uart/plib_uart2.h \
+ ../src/config/default/peripheral/spi/spi_master/plib_spi3_master.h \
  ../src/config/default/peripheral/clk/plib_clk.h \
  ../src/config/default/peripheral/gpio/plib_gpio.h \
  ../src/config/default/peripheral/evic/plib_evic.h \
@@ -35,6 +36,8 @@ build/default/debug/_ext/1360937237/w5500if.o: ../src/w5500if.c \
 ../src/config/default/peripheral/uart/plib_uart1.h:
 
 ../src/config/default/peripheral/uart/plib_uart2.h:
+
+../src/config/default/peripheral/spi/spi_master/plib_spi3_master.h:
 
 ../src/config/default/peripheral/clk/plib_clk.h:
 

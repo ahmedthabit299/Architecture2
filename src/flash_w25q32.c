@@ -3,7 +3,6 @@
 #include "peripheral/gpio/plib_gpio.h"
 
 // Use RA9 for the W25Q32 chip-select.
-// Define these once and remove any duplicate definitions.
 #define FLASH_CS_LOW()  GPIO_RA9_FL_SS3_Clear()
 #define FLASH_CS_HIGH() GPIO_RA9_FL_SS3_Set()
 
@@ -18,22 +17,28 @@ static void Flash_WaitBusy(void) {
     uint8_t status;
     do {
         FLASH_CS_LOW();
-        SPI3_Write(&cmd, 1);  // send status command
-        SPI3_Read(&status, 1); // read status byte
+        SPI3_Write(&cmd, 1);
+        while (SPI3_IsBusy());            // wait until the byte is sent
+        SPI3_Read(&status, 1);
+        while (SPI3_IsBusy());            // wait until the byte is received
         FLASH_CS_HIGH();
-    } while (status & 0x01);   // repeat until busy bit clears
+    } while (status & 0x01);
 }
 
 static void Flash_WriteEnable(void) {
     uint8_t cmd = CMD_WRITE_ENABLE;
     FLASH_CS_LOW();
     SPI3_Write(&cmd, 1);
+    while (SPI3_IsBusy());                // wait for completion
     FLASH_CS_HIGH();
 }
 
 void Flash_Init(void) {
     SPI3_Initialize();
-    FLASH_CS_HIGH();
+    // make RA9 a digital output and set CS high
+    ANSELACLR = (1u << 9);
+    GPIO_RA9_FL_SS3_OutputEnable();
+    GPIO_RA9_FL_SS3_Set();
 }
 
 void Flash_Read(uint32_t addr, uint8_t *buf, size_t len) {
@@ -43,7 +48,9 @@ void Flash_Read(uint32_t addr, uint8_t *buf, size_t len) {
                        (uint8_t)addr };
     FLASH_CS_LOW();
     SPI3_Write(cmd, 4);
+    while (SPI3_IsBusy());
     SPI3_Read(buf, len);
+    while (SPI3_IsBusy());
     FLASH_CS_HIGH();
 }
 
@@ -55,6 +62,7 @@ void Flash_EraseSector(uint32_t addr) {
                        (uint8_t)addr };
     FLASH_CS_LOW();
     SPI3_Write(cmd, 4);
+    while (SPI3_IsBusy());
     FLASH_CS_HIGH();
     Flash_WaitBusy();
 }
@@ -67,7 +75,9 @@ static void Flash_PageProgram(uint32_t addr, const uint8_t *buf, size_t len) {
                        (uint8_t)addr };
     FLASH_CS_LOW();
     SPI3_Write(cmd, 4);
-    SPI3_Write((void *)buf, len);  // cast to void* to match API
+    while (SPI3_IsBusy());
+    SPI3_Write((void *)buf, len);
+    while (SPI3_IsBusy());
     FLASH_CS_HIGH();
     Flash_WaitBusy();
 }

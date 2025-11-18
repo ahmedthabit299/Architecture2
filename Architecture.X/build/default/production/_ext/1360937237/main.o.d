@@ -17,7 +17,8 @@ build/default/production/_ext/1360937237/main.o: ../src/main.c \
  ../src/config/default/peripheral/tmr1/plib_tmr1.h ../src/../../pt.h \
  ../src/../../lc.h ../src/../../lc-switch.h ../src/lc.h \
  ../src/lc-switch.h ../src/../Architecture.X/protothreads.h \
- ../src/../Architecture.X/../../pt.h ../src/bsp.h ../src/flash_w25q32.h
+ ../src/../Architecture.X/../../pt.h ../src/bsp.h ../src/flash_w25q32.h \
+ ../src/storage.h
 
 ../src/config/default/definitions.h:
 
@@ -68,3 +69,5 @@ build/default/production/_ext/1360937237/main.o: ../src/main.c \
 ../src/bsp.h:
 
 ../src/flash_w25q32.h:
+
+../src/storage.h:

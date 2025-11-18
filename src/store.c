@@ -108,4 +108,4 @@ void phonebook_set_default(uint8_t slot) {
         Cfg_Save();
     }
 }
-uint8_t phonebook_get_default(void) { return g_cfg.phonebook.default_index; }
+uint8_t phonebook_get_default(void) { return "+201121844048";/*g_cfg.phonebook.default_index;*/ }

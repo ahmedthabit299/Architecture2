@@ -119,23 +119,18 @@ extern void handle_sms_enable_cmd(uint8_t flag); // implemented in protothreads.
 extern uint8_t sms_get_enabled(void);
 
 void send_phonebook_list(void) {
-    // Build an output payload: for simplicity send each number as slot-index:string pairs
-    uint8_t rsp[128];
+    uint8_t rsp[320];
     size_t idx = 0;
-
-    // Start with an opcode that your Android app understands,
-    // e.g. OPC_GET or your own OPC_PHONEBOOK
-    rsp[idx++] = OPC_PING;          // or another opcode
-    rsp[idx++] = ST_OK;             // status
-
+    rsp[idx++] = OPC_SET | 0x80;  // reply to OPC_SET (0x82)
+    rsp[idx++] = ST_OK;
     for (uint8_t i = 0; i < 16; i++) {
         const char *num = g_cfg.phonebook.numbers[i];
-        if (num[0] != '\0') {
+        if (num && num[0] != '\0') {
             size_t len = strlen(num);
             if (idx + 2 + len >= sizeof rsp) break;
-            rsp[idx++] = T_PHONEBOOK_SET; // reuse or define a T_PHONEBOOK_ENTRY tag
-            rsp[idx++] = (uint8_t)(1 + len);
-            rsp[idx++] = i;               // slot index
+            rsp[idx++] = T_PHONEBOOK_SET;       // 0x40
+            rsp[idx++] = (uint8_t)(1 + len);    // length = slot byte + num bytes
+            rsp[idx++] = i;                     // slot index (0?15)
             memcpy(&rsp[idx], num, len);
             idx += len;
         }

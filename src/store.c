@@ -2,6 +2,8 @@
 #include "schema.h"
 #include <string.h>
 // TODO: implement flash read/write; simple header {magic,version,len,crc}
+// store.c (or wherever these live)
+#include "phonebook_flash.h"
 
 #define CFG_FLASH_ADDR    0x00000000u
 #define CFG_MAGIC         0x43464731u  // 'CFG1' in ASCII
@@ -108,4 +110,6 @@ void phonebook_set_default(uint8_t slot) {
         Cfg_Save();
     }
 }
-uint8_t phonebook_get_default(void) { return "+201121844048";/*g_cfg.phonebook.default_index;*/ }
+uint8_t phonebook_get_default(void) {
+    return g_cfg.phonebook.default_index;
+}

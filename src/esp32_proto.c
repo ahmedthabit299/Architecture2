@@ -8,10 +8,10 @@
 #include "peripheral/uart/plib_uart1.h"         // UART1_SerialSetup, etc.
 #include "peripheral/uart/plib_uart_common.h"   // UART_SERIAL_SETUP
 #include "schema.h"        // <-- Add this line
-
+#include "store.h"         // or wherever phonebook_* is declared
 // extern time base (from your Timer1 tick)
 extern volatile uint32_t msTicks;
-
+extern DeviceCfg g_cfg;    // if you need it for other things
 /* -------------------- Protocol definitions -------------------- */
 enum {
     OPC_GET = 0x01,
@@ -118,23 +118,43 @@ enum {
 extern void handle_sms_enable_cmd(uint8_t flag); // implemented in protothreads.c
 extern uint8_t sms_get_enabled(void);
 
-void send_phonebook_list(void) {
+void send_phonebook_list(void)
+{
     uint8_t rsp[320];
     size_t idx = 0;
-    rsp[idx++] = OPC_SET | 0x80;  // reply to OPC_SET (0x82)
-    rsp[idx++] = ST_OK;
-    for (uint8_t i = 0; i < 16; i++) {
-        const char *num = g_cfg.phonebook.numbers[i];
+
+    // Reply opcode: reply to OPC_SET (0x02) -> 0x82
+    rsp[idx++] = OPC_SET | 0x80;
+    rsp[idx++] = ST_OK;    // status placeholder
+
+    for (uint8_t slot = 0; slot < 16; slot++) {
+        const char *num = phonebook_get_number(slot);
         if (num && num[0] != '\0') {
             size_t len = strlen(num);
-            if (idx + 2 + len >= sizeof rsp) break;
-            rsp[idx++] = T_PHONEBOOK_SET;       // 0x40
-            rsp[idx++] = (uint8_t)(1 + len);    // length = slot byte + num bytes
-            rsp[idx++] = i;                     // slot index (0?15)
+            // TLV: tag(1) + len(1) + slot(1) + number(len)
+            if (idx + 2 + 1 + len > sizeof(rsp))
+                break;
+
+            rsp[idx++] = T_PHONEBOOK_SET;      // 0x40
+            rsp[idx++] = (uint8_t)(1 + len);   // length = slot + digits
+            rsp[idx++] = slot;                 // slot index (0..15)
             memcpy(&rsp[idx], num, len);
             idx += len;
         }
     }
+    // ------------------------------------------------
+    // 2. NOW add the default slot TLV here
+    // ------------------------------------------------
+    uint8_t def = phonebook_get_default();
+    if (def < 16 && idx + 3 <= sizeof(rsp)) {
+        rsp[idx++] = T_PHONEBOOK_DEF;  // 0x42
+        rsp[idx++] = 1;                // length = 1 byte
+        rsp[idx++] = def;              // default index
+    }
+
+    // ------------------------------------------------
+    // 3. Send all TLVs together
+    // ------------------------------------------------
     ESP32_SendFrame(rsp, idx);
 }
 

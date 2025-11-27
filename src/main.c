@@ -175,7 +175,7 @@ int main(void) {
 
     // main.c
     ESP32_UartInit(); // call after SYS_Initialize
-
+    Flash_Init();
     Cfg_Load(); // load config from external flash
 
     // === UART test = One-time UART startup messages  ===

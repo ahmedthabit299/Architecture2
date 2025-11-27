@@ -113,7 +113,7 @@ enum {
     T_SMS_EN = 0x20,
     T_PHONEBOOK_SET = 0x40, // slot + number (variable length)
     T_PHONEBOOK_LIST = 0x41, // no payload
-    T_PHONEBOOK_DEF = 0x42, // one?byte slot index
+    T_PHONEBOOK_DEF = 0x42, // one-byte slot index
 };
 extern void handle_sms_enable_cmd(uint8_t flag); // implemented in protothreads.c
 extern uint8_t sms_get_enabled(void);
@@ -142,9 +142,7 @@ void send_phonebook_list(void)
             idx += len;
         }
     }
-    // ------------------------------------------------
-    // 2. NOW add the default slot TLV here
-    // ------------------------------------------------
+    // NOW add the default slot TLV here
     uint8_t def = phonebook_get_default();
     if (def < 16 && idx + 3 <= sizeof(rsp)) {
         rsp[idx++] = T_PHONEBOOK_DEF;  // 0x42
@@ -152,9 +150,7 @@ void send_phonebook_list(void)
         rsp[idx++] = def;              // default index
     }
 
-    // ------------------------------------------------
-    // 3. Send all TLVs together
-    // ------------------------------------------------
+    // Send all TLVs together
     ESP32_SendFrame(rsp, idx);
 }
 
@@ -276,7 +272,7 @@ static bool tlv_apply(const uint8_t* p, size_t plen, uint8_t* st_out) {
             return true;
         case T_PHONEBOOK_SET:
         {
-            /* p[2] = slot (0?15); p+3..p+len-1 = ASCII number */
+            /* p[2] = slot (0..15); p+3..p+len-1 = ASCII number */
             if (len < 2) {
                 *st_out = ST_BAD_TLV;
                 return false;
@@ -286,7 +282,7 @@ static bool tlv_apply(const uint8_t* p, size_t plen, uint8_t* st_out) {
                 *st_out = ST_BAD_TLV;
                 return false;
             }
-            /* copy number (ensure zero?termination and max 23 chars) */
+            /* copy number (ensure zero-termination and max 23 chars) */
             char num[24] = {0};
             size_t copylen = len - 1;
             if (copylen > 23) copylen = 23;
